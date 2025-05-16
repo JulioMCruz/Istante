@@ -8,8 +8,11 @@ import Collection from './pages/Collection';
 import MomentDetail from './pages/MomentDetail';
 import CreateMoment from './pages/CreateMoment';
 import MyAccount from './pages/MyAccount';
+import MyRequests from './pages/MyRequests';
+import Settings from './pages/Settings';
 import { mockSlides } from './data/mockData';
 import { Slide } from './types';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   const [slides, setSlides] = useState<Slide[]>(mockSlides);
@@ -25,23 +28,27 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-        <Header />
-        <Navigation />
-        <div className="md:pl-64">
-          <Routes>
-            <Route path="/" element={<Home slides={slides} />} />
-            <Route path="/explore" element={<Explore />} />
-            <Route path="/collection" element={<Collection />} />
-            <Route path="/moment/:id" element={<MomentDetail />} />
-            <Route path="/create" element={<CreateMoment onCreateMoment={handleCreateMoment} />} />
-            <Route path="/profile" element={<MyAccount />} />
-          </Routes>
+    <ThemeProvider>
+      <Router>
+        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-gray-100">
+          <Header />
+          <Navigation />
+          <div className="md:pl-64">
+            <Routes>
+              <Route path="/" element={<Home slides={slides} />} />
+              <Route path="/explore" element={<Explore />} />
+              <Route path="/create" element={<CreateMoment onCreateMoment={handleCreateMoment} />} />
+              <Route path="/requests" element={<MyRequests />} />
+              <Route path="/collection" element={<Collection />} />
+              <Route path="/moment/:id" element={<MomentDetail />} />
+              <Route path="/profile" element={<MyAccount />} />
+              <Route path="/settings" element={<Settings />} />
+            </Routes>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 
-export default App;
+export default App
