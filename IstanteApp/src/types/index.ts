@@ -4,4 +4,10 @@ export interface Slide {
   description: string;
   imageUrl: string;
   mintPrice?: string;
+  author: {
+    id: string;
+    name: string;
+    avatar: string;
+    isFollowing: boolean;
+  };
 }
