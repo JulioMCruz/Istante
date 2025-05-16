@@ -12,6 +12,9 @@ interface MomentData {
   status: 'Created' | 'Draft' | 'Signing' | 'Signed';
   isPublic: boolean;
   inviteCode?: string;
+  mintPrice?: string;
+  mintCurrency?: 'ETH' | 'USDC' | 'EURC';
+  maxMints?: string;
 }
 
 // Mock data - In a real app, this would come from your backend
@@ -24,7 +27,10 @@ const mockMoment: MomentData = {
   signers: ['0x123...456'],
   status: 'Created',
   isPublic: false,
-  inviteCode: 'MOUNTAIN2024'
+  inviteCode: 'MOUNTAIN2024',
+  mintPrice: '0.1',
+  mintCurrency: 'ETH',
+  maxMints: '1000'
 };
 
 const EditMoment: React.FC = () => {
@@ -38,6 +44,9 @@ const EditMoment: React.FC = () => {
   const [signers, setSigners] = useState<string[]>(['']);
   const [isPublic, setIsPublic] = useState(true);
   const [inviteCode, setInviteCode] = useState('');
+  const [mintPrice, setMintPrice] = useState('');
+  const [mintCurrency, setMintCurrency] = useState<'ETH' | 'USDC' | 'EURC'>('ETH');
+  const [maxMints, setMaxMints] = useState('');
   
   useEffect(() => {
     // In a real app, fetch the moment data from your backend
@@ -48,6 +57,9 @@ const EditMoment: React.FC = () => {
     setSigners(mockMoment.signers);
     setIsPublic(mockMoment.isPublic);
     setInviteCode(mockMoment.inviteCode || '');
+    setMintPrice(mockMoment.mintPrice || '');
+    setMintCurrency(mockMoment.mintCurrency || 'ETH');
+    setMaxMints(mockMoment.maxMints || '');
   }, [id]);
   
   const handleUploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +94,7 @@ const EditMoment: React.FC = () => {
     e.preventDefault();
     
     if (!title || !description || !imagePreview || !treasuryWallet) {
-      alert('Please fill all fields and upload an image');
+      alert('Please fill all required fields and upload an image');
       return;
     }
 
@@ -93,6 +105,16 @@ const EditMoment: React.FC = () => {
 
     if (!isPublic && !inviteCode) {
       alert('Please enter an invite code for private moments');
+      return;
+    }
+
+    if (mintPrice && isNaN(Number(mintPrice))) {
+      alert('Please enter a valid price');
+      return;
+    }
+
+    if (maxMints && isNaN(Number(maxMints))) {
+      alert('Please enter a valid number for maximum mints');
       return;
     }
 
@@ -114,7 +136,10 @@ const EditMoment: React.FC = () => {
       treasuryWallet,
       signers,
       isPublic,
-      inviteCode
+      inviteCode,
+      mintPrice,
+      mintCurrency,
+      maxMints
     };
     localStorage.setItem(`momentDraft-${id}`, JSON.stringify(draft));
     alert('Draft saved successfully!');
@@ -239,6 +264,47 @@ const EditMoment: React.FC = () => {
               <p className="mt-1 text-sm text-gray-500">
                 Enter the Ethereum wallet address where you want to receive the funds
               </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Mint Price
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={mintPrice}
+                    onChange={(e) => setMintPrice(e.target.value)}
+                    placeholder="0.00"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  />
+                  <select
+                    value={mintCurrency}
+                    onChange={(e) => setMintCurrency(e.target.value as 'ETH' | 'USDC' | 'EURC')}
+                    className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
+                  >
+                    <option value="ETH">ETH</option>
+                    <option value="USDC">USDC</option>
+                    <option value="EURC">EURC</option>
+                  </select>
+                </div>
+                <p className="mt-1 text-sm text-gray-500">Leave empty for free minting</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Maximum Mints
+                </label>
+                <input
+                  type="text"
+                  value={maxMints}
+                  onChange={(e) => setMaxMints(e.target.value)}
+                  placeholder="Unlimited"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                />
+                <p className="mt-1 text-sm text-gray-500">Leave empty for unlimited mints</p>
+              </div>
             </div>
             
             <div>

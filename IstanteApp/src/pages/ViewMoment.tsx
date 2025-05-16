@@ -18,6 +18,9 @@ interface MomentData {
   status: 'Created' | 'Draft' | 'Signing' | 'Signed';
   isPublic: boolean;
   inviteCode?: string;
+  mintPrice?: string;
+  mintCurrency?: 'ETH' | 'USDC' | 'EURC';
+  maxMints?: string;
 }
 
 // Mock data - In a real app, this would come from your backend
@@ -44,7 +47,10 @@ const mockMoment: MomentData = {
   ],
   status: 'Signing',
   isPublic: false,
-  inviteCode: 'OCEAN2024'
+  inviteCode: 'OCEAN2024',
+  mintPrice: '0.1',
+  mintCurrency: 'ETH',
+  maxMints: '1000'
 };
 
 const ViewMoment: React.FC = () => {
@@ -139,6 +145,30 @@ const ViewMoment: React.FC = () => {
               </label>
               <div className="w-full px-4 py-3 bg-gray-50 rounded-xl text-gray-900 font-mono">
                 {moment.treasuryWallet}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Mint Price
+                </label>
+                <div className="w-full px-4 py-3 bg-gray-50 rounded-xl text-gray-900">
+                  {moment.mintPrice ? (
+                    <span>{moment.mintPrice} {moment.mintCurrency}</span>
+                  ) : (
+                    <span className="text-gray-500">Free minting</span>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Maximum Mints
+                </label>
+                <div className="w-full px-4 py-3 bg-gray-50 rounded-xl text-gray-900">
+                  {moment.maxMints || <span className="text-gray-500">Unlimited</span>}
+                </div>
               </div>
             </div>
             
