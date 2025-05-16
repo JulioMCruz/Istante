@@ -55,7 +55,9 @@ const MomentDetail: React.FC = () => {
                     See in OpenSea
                   </button>
                 ) : (
-                  <MintButton slideId={moment.id} />
+                  <div className="w-48">
+                    <MintButton slideId={moment.id} showDetails />
+                  </div>
                 )}
               </div>
             </div>

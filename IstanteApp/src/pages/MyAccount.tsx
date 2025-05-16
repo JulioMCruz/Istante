@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, Twitter, MapPin, Edit2, Check, X } from 'lucide-react';
+import { ExternalLink, ArrowLeft, Twitter, MapPin, Edit2, Check, X, Camera, Upload } from 'lucide-react';
 
 interface CollectionItem {
   id: string;
@@ -27,6 +27,7 @@ interface UserProfile {
   location: string;
   twitter: string;
   warpcast: string;
+  avatar: string | null;
 }
 
 // Mock data for collection with transactions
@@ -94,9 +95,11 @@ const MyAccount: React.FC = () => {
     bio: '',
     location: '',
     twitter: '',
-    warpcast: ''
+    warpcast: '',
+    avatar: null
   });
   const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const totalEarnings = mockCollection.reduce((sum, item) => sum + item.amountCollected, 0);
 
@@ -131,6 +134,21 @@ const MyAccount: React.FC = () => {
   const handleCancelEdit = () => {
     setEditedProfile(profile);
     setIsEditing(false);
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setEditedProfile({ ...editedProfile, avatar: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setEditedProfile({ ...editedProfile, avatar: null });
   };
 
   return (
@@ -170,7 +188,65 @@ const MyAccount: React.FC = () => {
             )}
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Profile Photo */}
+            <div className="flex flex-col items-center">
+              <div className="relative">
+                {isEditing ? (
+                  <div className="relative">
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700">
+                      {editedProfile.avatar ? (
+                        <img
+                          src={editedProfile.avatar}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Camera className="w-8 h-8 text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      id="photo-upload"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                    />
+                    <button
+                      onClick={() => document.getElementById('photo-upload')?.click()}
+                      className="absolute bottom-0 right-0 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white hover:bg-purple-700 transition-colors"
+                    >
+                      <Upload className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700">
+                    {profile.avatar ? (
+                      <img
+                        src={profile.avatar}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Camera className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {isEditing && editedProfile.avatar && (
+                <button
+                  onClick={handleRemovePhoto}
+                  className="mt-2 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                >
+                  Remove photo
+                </button>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Name
