@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Home, Search, PlusSquare, Wallet, Settings, User, FileSignature, Menu, X } from 'lucide-react';
+import { Home, Search, PlusSquare, Wallet, Settings, User, FileSignature, Menu, X, Palette } from 'lucide-react';
 
 const Navigation: React.FC = () => {
   const location = useLocation();
@@ -18,6 +18,7 @@ const Navigation: React.FC = () => {
 
   const mobileMenuItems = [
     { icon: Wallet, label: 'My Collection', path: '/collection' },
+    { icon: Palette, label: 'Creations', path: '/creations' },
     { icon: FileSignature, label: 'My Requests', path: '/requests' }
   ];
 
@@ -26,6 +27,7 @@ const Navigation: React.FC = () => {
     { icon: Search, label: 'Explore', path: '/explore' },
     { icon: Wallet, label: 'My Collection', path: '/collection' },
     { icon: PlusSquare, label: 'Create', path: '/create' },
+    { icon: Palette, label: 'Creations', path: '/creations' },
     { icon: FileSignature, label: 'My Requests', path: '/requests' },
     { icon: User, label: 'My Account', path: '/profile' },
     { icon: Settings, label: 'Settings', path: '/settings' }

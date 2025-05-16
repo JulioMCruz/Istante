@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, Twitter, MapPin, Edit2, Check, X } from 'lucide-react';
+import { ExternalLink, ArrowLeft, Calendar, Eye, Upload, Edit } from 'lucide-react';
 
 interface CollectionItem {
   id: string;
   title: string;
   totalMints: number;
   amountCollected: number;
+  publishedAt: string;
 }
 
 interface Transaction {
@@ -21,13 +22,43 @@ interface MomentDetails extends CollectionItem {
   transactions: Transaction[];
 }
 
-interface UserProfile {
-  name: string;
-  bio: string;
-  location: string;
-  twitter: string;
-  warpcast: string;
+type TimeFilter = 'this-month' | 'last-6-months' | 'last-year' | 'all';
+type MomentStatus = 'Created' | 'Draft' | 'Signing' | 'Signed';
+
+interface CreatedMoment {
+  id: string;
+  title: string;
+  createdAt: string;
+  status: MomentStatus;
 }
+
+// Mock data for created moments
+const mockCreatedMoments: CreatedMoment[] = [
+  {
+    id: 'new-1',
+    title: 'Mountain Sunrise',
+    createdAt: '2024-03-21T08:30:00Z',
+    status: 'Created'
+  },
+  {
+    id: 'new-2',
+    title: 'Urban Night',
+    createdAt: '2024-03-20T15:45:00Z',
+    status: 'Draft'
+  },
+  {
+    id: 'new-3',
+    title: 'Ocean Waves',
+    createdAt: '2024-03-19T12:20:00Z',
+    status: 'Signing'
+  },
+  {
+    id: 'new-4',
+    title: 'Desert Storm',
+    createdAt: '2024-03-18T09:15:00Z',
+    status: 'Signed'
+  }
+];
 
 // Mock data for collection with transactions
 const mockCollection: MomentDetails[] = [
@@ -36,6 +67,7 @@ const mockCollection: MomentDetails[] = [
     title: 'Cosmic Dreamscape',
     totalMints: 150,
     amountCollected: 37.5,
+    publishedAt: '2024-03-20T15:30:00Z',
     transactions: [
       {
         id: 'tx-1',
@@ -58,6 +90,7 @@ const mockCollection: MomentDetails[] = [
     title: 'Digital Eden',
     totalMints: 85,
     amountCollected: 12.75,
+    publishedAt: '2024-02-15T09:45:00Z',
     transactions: [
       {
         id: 'tx-3',
@@ -73,6 +106,7 @@ const mockCollection: MomentDetails[] = [
     title: 'Neon Metropolis',
     totalMints: 200,
     amountCollected: 60,
+    publishedAt: '2023-09-17T14:20:00Z',
     transactions: [
       {
         id: 'tx-4',
@@ -85,18 +119,10 @@ const mockCollection: MomentDetails[] = [
   }
 ];
 
-const MyAccount: React.FC = () => {
+const Creations: React.FC = () => {
   const navigate = useNavigate();
   const [selectedMoment, setSelectedMoment] = useState<MomentDetails | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState<UserProfile>({
-    name: '',
-    bio: '',
-    location: '',
-    twitter: '',
-    warpcast: ''
-  });
-  const [editedProfile, setEditedProfile] = useState<UserProfile>(profile);
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
 
   const totalEarnings = mockCollection.reduce((sum, item) => sum + item.amountCollected, 0);
 
@@ -118,182 +144,125 @@ const MyAccount: React.FC = () => {
     return `${txId.slice(0, 10)}...${txId.slice(-8)}`;
   };
 
-  const handleEditProfile = () => {
-    setEditedProfile(profile);
-    setIsEditing(true);
+  const filterMoments = (moments: MomentDetails[]): MomentDetails[] => {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const sixMonthsAgo = new Date(now.setMonth(now.getMonth() - 6));
+    const oneYearAgo = new Date(now.setFullYear(now.getFullYear() - 1));
+
+    return moments.filter(moment => {
+      const publishedDate = new Date(moment.publishedAt);
+      switch (timeFilter) {
+        case 'this-month':
+          return publishedDate >= firstDayOfMonth;
+        case 'last-6-months':
+          return publishedDate >= sixMonthsAgo;
+        case 'last-year':
+          return publishedDate >= oneYearAgo;
+        default:
+          return true;
+      }
+    });
   };
 
-  const handleSaveProfile = () => {
-    setProfile(editedProfile);
-    setIsEditing(false);
+  const getStatusColor = (status: MomentStatus) => {
+    switch (status) {
+      case 'Created':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300';
+      case 'Draft':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-300';
+      case 'Signing':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-300';
+      case 'Signed':
+        return 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-300';
+    }
   };
 
-  const handleCancelEdit = () => {
-    setEditedProfile(profile);
-    setIsEditing(false);
+  const getActionButton = (moment: CreatedMoment) => {
+    switch (moment.status) {
+      case 'Created':
+      case 'Draft':
+        return (
+          <button
+            onClick={() => navigate(`/moment/${moment.id}/edit`)}
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors text-sm font-medium"
+          >
+            <Edit className="w-4 h-4" />
+            Edit
+          </button>
+        );
+      case 'Signing':
+        return (
+          <button
+            onClick={() => navigate(`/moment/${moment.id}/view`)}
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors text-sm font-medium"
+          >
+            <Eye className="w-4 h-4" />
+            View
+          </button>
+        );
+      case 'Signed':
+        return (
+          <button
+            onClick={() => navigate(`/publish/${moment.id}`)}
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-500/30 transition-colors text-sm font-medium"
+          >
+            <Upload className="w-4 h-4" />
+            Publish
+          </button>
+        );
+    }
   };
+
+  const filteredMoments = filterMoments(mockCollection);
 
   return (
     <div className="container mx-auto px-4 pt-24 pb-24 md:pb-12">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">My Account</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">My Creations</h1>
 
       <div className="max-w-3xl mx-auto space-y-8">
-        {/* Profile Section */}
+        {/* Created Moments Section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Profile</h2>
-            {isEditing ? (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleSaveProfile}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-500/30 transition-colors text-sm font-medium"
-                >
-                  <Check className="w-4 h-4" />
-                  Save
-                </button>
-                <button
-                  onClick={handleCancelEdit}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
-                >
-                  <X className="w-4 h-4" />
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={handleEditProfile}
-                className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
-              >
-                <Edit2 className="w-4 h-4" />
-                Edit Profile
-              </button>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Name
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editedProfile.name}
-                  onChange={(e) => setEditedProfile({ ...editedProfile, name: e.target.value })}
-                  placeholder="Enter your name"
-                  className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent"
-                />
-              ) : (
-                <p className="text-gray-900 dark:text-gray-100">
-                  {profile.name || 'Add your name'}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Bio
-              </label>
-              {isEditing ? (
-                <textarea
-                  value={editedProfile.bio}
-                  onChange={(e) => setEditedProfile({ ...editedProfile, bio: e.target.value })}
-                  placeholder="Tell us about yourself"
-                  rows={3}
-                  className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent resize-none"
-                />
-              ) : (
-                <p className="text-gray-900 dark:text-gray-100">
-                  {profile.bio || 'Add your bio'}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Location
-              </label>
-              {isEditing ? (
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    value={editedProfile.location}
-                    onChange={(e) => setEditedProfile({ ...editedProfile, location: e.target.value })}
-                    placeholder="Where are you based?"
-                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent"
-                  />
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
-                  <MapPin className="w-5 h-5 text-gray-400" />
-                  {profile.location || 'Add your location'}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Social Accounts
-              </label>
-              <div className="space-y-3">
-                {isEditing ? (
-                  <>
-                    <div className="relative">
-                      <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="text"
-                        value={editedProfile.twitter}
-                        onChange={(e) => setEditedProfile({ ...editedProfile, twitter: e.target.value })}
-                        placeholder="Twitter username"
-                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent"
-                      />
-                    </div>
-                    <input
-                      type="text"
-                      value={editedProfile.warpcast}
-                      onChange={(e) => setEditedProfile({ ...editedProfile, warpcast: e.target.value })}
-                      placeholder="Warpcast username"
-                      className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent"
-                    />
-                  </>
-                ) : (
-                  <div className="space-y-2">
-                    {profile.twitter && (
-                      <a
-                        href={`https://twitter.com/${profile.twitter}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-gray-900 dark:text-gray-100 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                      >
-                        <Twitter className="w-5 h-5" />
-                        @{profile.twitter}
-                      </a>
-                    )}
-                    {profile.warpcast && (
-                      <a
-                        href={`https://warpcast.com/${profile.warpcast}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-gray-900 dark:text-gray-100 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                      >
-                        <span className="font-bold">fc/</span>
-                        {profile.warpcast}
-                      </a>
-                    )}
-                    {!profile.twitter && !profile.warpcast && (
-                      <p className="text-gray-500 dark:text-gray-400">
-                        Add your social accounts
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Created Moments</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Title</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Created</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Status</th>
+                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {mockCreatedMoments.map((moment) => (
+                  <tr key={moment.id} className="group hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td className="py-3 px-4">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{moment.title}</span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {formatDate(moment.createdAt)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(moment.status)}`}>
+                        {moment.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      {getActionButton(moment)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Collection Section */}
+        {/* Published Moments Section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           {selectedMoment ? (
             <>
@@ -364,7 +333,22 @@ const MyAccount: React.FC = () => {
           ) : (
             <>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Collection</h2>
+                <div className="space-y-2">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Published Moments</h2>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    <select
+                      value={timeFilter}
+                      onChange={(e) => setTimeFilter(e.target.value as TimeFilter)}
+                      className="text-sm text-gray-600 dark:text-gray-300 bg-transparent border-none focus:ring-0 cursor-pointer hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                    >
+                      <option value="all">All Time</option>
+                      <option value="this-month">This Month</option>
+                      <option value="last-6-months">Last 6 Months</option>
+                      <option value="last-year">Last Year</option>
+                    </select>
+                  </div>
+                </div>
                 <div className="bg-purple-50 dark:bg-purple-500/10 px-4 py-2 rounded-lg">
                   <p className="text-sm text-purple-700 dark:text-purple-300 font-medium">
                     Total Earnings: {totalEarnings} ETH
@@ -378,13 +362,14 @@ const MyAccount: React.FC = () => {
                     <tr className="border-b border-gray-100 dark:border-gray-700">
                       <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Moment ID</th>
                       <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Title</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Published</th>
                       <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Total Mints</th>
                       <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Amount (ETH)</th>
-                      <th className="py-3 px-4"></th>
+                      <th className="text-right py-3 px-4 text-sm font-medium text-gray-500 dark:text-gray-400">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {mockCollection.map((item) => (
+                    {filteredMoments.map((item) => (
                       <tr key={item.id} className="group hover:bg-gray-50 dark:hover:bg-gray-700/50">
                         <td className="py-3 px-4">
                           <span className="text-sm font-mono text-gray-600 dark:text-gray-400">{item.id}</span>
@@ -392,16 +377,21 @@ const MyAccount: React.FC = () => {
                         <td className="py-3 px-4">
                           <span className="text-sm font-medium text-gray-900 dark:text-white">{item.title}</span>
                         </td>
+                        <td className="py-3 px-4">
+                          <span className="text-sm text-gray-600 dark:text-gray-400">
+                            {formatDate(item.publishedAt)}
+                          </span>
+                        </td>
                         <td className="py-3 px-4 text-right">
                           <span className="text-sm text-gray-600 dark:text-gray-400">{item.totalMints}</span>
                         </td>
                         <td className="py-3 px-4 text-right">
                           <span className="text-sm font-medium text-gray-900 dark:text-white">{item.amountCollected}</span>
                         </td>
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-4 text-right">
                           <button
                             onClick={() => setSelectedMoment(item)}
-                            className="opacity-0 group-hover:opacity-100 px-3 py-1 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium transition-all"
+                            className="px-3 py-1 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium transition-colors"
                           >
                             See details
                           </button>
@@ -419,4 +409,4 @@ const MyAccount: React.FC = () => {
   );
 };
 
-export default MyAccount;
+export default Creations;

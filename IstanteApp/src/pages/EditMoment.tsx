@@ -1,22 +1,54 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Upload, ArrowLeft, Plus, X, Globe, Lock } from 'lucide-react';
-import SuccessModal from '../components/SuccessModal';
 
-interface CreateMomentProps {
-  onCreateMoment: (data: { title: string; description: string; imageUrl: string }) => void;
+interface MomentData {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  treasuryWallet: string;
+  signers: string[];
+  status: 'Created' | 'Draft' | 'Signing' | 'Signed';
+  isPublic: boolean;
+  inviteCode?: string;
 }
 
-const CreateMoment: React.FC<CreateMomentProps> = ({ onCreateMoment }) => {
+// Mock data - In a real app, this would come from your backend
+const mockMoment: MomentData = {
+  id: 'new-1',
+  title: 'Mountain Sunrise',
+  description: 'A beautiful sunrise over the mountains',
+  imageUrl: 'https://images.pexels.com/photos/1252890/pexels-photo-1252890.jpeg',
+  treasuryWallet: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+  signers: ['0x123...456'],
+  status: 'Created',
+  isPublic: false,
+  inviteCode: 'MOUNTAIN2024'
+};
+
+const EditMoment: React.FC = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [treasuryWallet, setTreasuryWallet] = useState('');
   const [signers, setSigners] = useState<string[]>(['']);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isPublic, setIsPublic] = useState(true);
   const [inviteCode, setInviteCode] = useState('');
-  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // In a real app, fetch the moment data from your backend
+    setTitle(mockMoment.title);
+    setDescription(mockMoment.description);
+    setImagePreview(mockMoment.imageUrl);
+    setTreasuryWallet(mockMoment.treasuryWallet);
+    setSigners(mockMoment.signers);
+    setIsPublic(mockMoment.isPublic);
+    setInviteCode(mockMoment.inviteCode || '');
+  }, [id]);
   
   const handleUploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,13 +102,8 @@ const CreateMoment: React.FC<CreateMomentProps> = ({ onCreateMoment }) => {
       return;
     }
     
-    onCreateMoment({
-      title,
-      description,
-      imageUrl: imagePreview
-    });
-    
-    setShowSuccessModal(true);
+    // In a real app, save the updated moment data to your backend
+    navigate('/creations');
   };
 
   const handleSaveDraft = () => {
@@ -89,19 +116,8 @@ const CreateMoment: React.FC<CreateMomentProps> = ({ onCreateMoment }) => {
       isPublic,
       inviteCode
     };
-    localStorage.setItem('momentDraft', JSON.stringify(draft));
+    localStorage.setItem(`momentDraft-${id}`, JSON.stringify(draft));
     alert('Draft saved successfully!');
-  };
-
-  const handleCloseSuccessModal = () => {
-    setShowSuccessModal(false);
-    setTitle('');
-    setDescription('');
-    setImagePreview(null);
-    setTreasuryWallet('');
-    setSigners(['']);
-    setIsPublic(true);
-    setInviteCode('');
   };
   
   return (
@@ -116,7 +132,7 @@ const CreateMoment: React.FC<CreateMomentProps> = ({ onCreateMoment }) => {
             Back
           </button>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Create New Moment</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Edit Moment</h1>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -326,19 +342,14 @@ const CreateMoment: React.FC<CreateMomentProps> = ({ onCreateMoment }) => {
                 type="submit"
                 className="px-8 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-medium"
               >
-                Create Moment
+                Update Moment
               </button>
             </div>
           </form>
         </div>
       </div>
-
-      <SuccessModal
-        isOpen={showSuccessModal}
-        onClose={handleCloseSuccessModal}
-      />
     </div>
   );
 };
 
-export default CreateMoment;
+export default EditMoment;

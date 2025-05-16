@@ -30,7 +30,27 @@ const Settings: React.FC = () => {
     <div className="container mx-auto px-4 pt-24 pb-24 md:pb-12">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Settings</h1>
 
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto space-y-8">
+        {/* Connected Wallet Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Connected Wallet</h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-500/20 rounded-full flex items-center justify-center">
+                <span className="text-purple-600 dark:text-purple-400 font-medium">W</span>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">0xD8...F3a2</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Connected with MetaMask</p>
+              </div>
+            </div>
+            <button className="px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors">
+              Disconnect
+            </button>
+          </div>
+        </div>
+
+        {/* Appearance Section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Appearance</h2>
           
