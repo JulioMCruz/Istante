@@ -7,9 +7,12 @@ import Explore from './pages/Explore';
 import Collection from './pages/Collection';
 import MomentDetail from './pages/MomentDetail';
 import CreateMoment from './pages/CreateMoment';
+import EditMoment from './pages/EditMoment';
+import ViewMoment from './pages/ViewMoment';
 import MyAccount from './pages/MyAccount';
 import MyRequests from './pages/MyRequests';
 import Settings from './pages/Settings';
+import Creations from './pages/Creations';
 import { mockSlides } from './data/mockData';
 import { Slide } from './types';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -38,6 +41,9 @@ function App() {
               <Route path="/" element={<Home slides={slides} />} />
               <Route path="/explore" element={<Explore />} />
               <Route path="/create" element={<CreateMoment onCreateMoment={handleCreateMoment} />} />
+              <Route path="/moment/:id/edit" element={<EditMoment />} />
+              <Route path="/moment/:id/view" element={<ViewMoment />} />
+              <Route path="/creations" element={<Creations />} />
               <Route path="/requests" element={<MyRequests />} />
               <Route path="/collection" element={<Collection />} />
               <Route path="/moment/:id" element={<MomentDetail />} />
@@ -51,4 +57,4 @@ function App() {
   );
 }
 
-export default App
+export default App;
