@@ -11,10 +11,10 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
- * @title ZodiacNFT
- * @dev NFT contract for Zodiac Card Farcaster mini app on Base network
+* @title InstantNFT
+ * @dev NFT contract for InstantNFT on Base network
  */
-contract ZodiacNFT is 
+contract InstantNFT is 
     Initializable, 
     ERC721Upgradeable,
     ERC721URIStorageUpgradeable,
